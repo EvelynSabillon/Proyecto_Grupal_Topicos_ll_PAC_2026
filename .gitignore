@@ -18,10 +18,7 @@ Backups/*
 # Archivos temporales que dejan a medias los scripts de monitoreo:
 backend/*.tmp
 
-# --- Configuracion local de cada equipo ------------------------------------
-# La escribe la ventana "Conexion y llaves SSH". Cada integrante tiene la
-# suya (su IP, su usuario, su ruta de llave), asi que no se versiona.
-conexion.ini
+
 
 # --- Llaves: NUNCA subir al repositorio -----------------------------------
 *.pem
