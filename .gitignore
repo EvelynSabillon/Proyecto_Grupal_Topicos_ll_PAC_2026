@@ -1,0 +1,44 @@
+# --- Archivos de monitoreo: los regeneran los scripts en cada ejecucion ---
+runtime/*
+!runtime/.gitkeep
+
+# --- Respaldos traidos del router ---
+Backups/*
+!Backups/.gitkeep
+*.backup
+
+# --- Scripts del backend ---------------------------------------------------
+# NO se ignoran: forman parte del codigo fuente que se entrega.
+#
+# Los cuatro de monitoreo son fijos. Los otros quince los REESCRIBE la
+# aplicacion cada vez que se pulsa el boton correspondiente, asi que despues
+# de usar el programa apareceran como modificados en git. Es lo esperado: la
+# version del repositorio es la de referencia, con valores de ejemplo.
+#
+# Archivos temporales que dejan a medias los scripts de monitoreo:
+backend/*.tmp
+
+# --- Configuracion local de cada equipo ------------------------------------
+# La escribe la ventana "Conexion y llaves SSH". Cada integrante tiene la
+# suya (su IP, su usuario, su ruta de llave), asi que no se versiona.
+conexion.ini
+
+# --- Llaves: NUNCA subir al repositorio -----------------------------------
+*.pem
+*_key
+*_key.pub
+id_rsa*
+
+# --- Python ---------------------------------------------------------------
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# --- Editores y sistema ---------------------------------------------------
+*.swp
+*.swo
+*~
+.DS_Store
+.idea/
+.vscode/
