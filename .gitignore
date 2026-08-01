@@ -1,11 +1,3 @@
-# --- Archivos de monitoreo: los regeneran los scripts en cada ejecucion ---
-runtime/*
-!runtime/.gitkeep
-
-# --- Respaldos traidos del router ---
-Backups/*
-!Backups/.gitkeep
-*.backup
 
 # --- Scripts del backend ---------------------------------------------------
 # NO se ignoran: forman parte del codigo fuente que se entrega.
