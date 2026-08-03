@@ -41,8 +41,7 @@ TMP="${SALIDA}.tmp"
 
 # --- Comando de RouterOS -----------------------------------------------------
 # Se comprueba con [:len [/interface find name=...]] que la interfaz exista
-# antes de pedirle el trafico. Sin esa comprobacion, una interfaz mal escrita
-# hacia fallar TODA la consulta y las dos interfaces se quedaban en blanco.
+# antes de pedirle el trafico.
 CMD=":local n1 \"$IF1\"; :local n2 \"$IF2\";"
 CMD="$CMD :if ([:len [/interface find name=\$n1]] > 0) do={"
 CMD="$CMD /interface monitor-traffic interface=\$n1 once do={"
@@ -65,10 +64,6 @@ do
         -i "$LLAVE" "$USUARIO@$IP" "$CMD" > "$TMP" 2>/dev/null
 
     # Se comprueba el codigo de salida Y que la respuesta traiga lineas DATO.
-    # Lo segundo hace falta porque RouterOS devuelve 0 aunque rechace el
-    # comando: sin esta comprobacion, un error de sintaxis dejaba el archivo
-    # lleno de texto de error y la ventana se quedaba en "Esperando datos..."
-    # para siempre, sin decir que pasaba.
     if [ $? -ne 0 ] || ! grep -q "^DATO " "$TMP" 2>/dev/null; then
         # El router no respondio o respondio otra cosa: se marcan las dos
         # interfaces como caidas en vez de dejar el dato anterior congelado,
