@@ -73,7 +73,7 @@ El proyecto está organizado en **dos capas separadas lógicamente** dentro de `
                              ▼
                           RouterOS
 ```
- **`mikrotik_web.py` lo demuestra**. Es una interfaz web completa que hace exactamente lo mismo desde el navegador, y su código no contiene ni un solo comando de RouterOS, ni una línea de `ssh`, ni una validación. Todo lo importa:
+ **`mikrotik_web.py` Es una interfaz web completa que hace exactamente lo mismo desde el navegador, y su código no contiene ni un solo comando de RouterOS, ni una línea de `ssh`, ni una validación. Todo lo importa:
 
 ```python
 import mikrotik_system_customtkinter as mk
