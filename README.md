@@ -129,8 +129,8 @@ Además cada operación **verifica la post-condición**: después de crear una I
 
 Sobre los 15 scripts de administración: la versión incluida en el repositorio es de **referencia**, con valores de ejemplo, para que el backend se pueda leer sin necesidad de ejecutar el programa. La función `ejecutar()` los **reescribe** con los datos del formulario cada vez que se pulsa el botón correspondiente, y después los lanza con `bash` capturando la respuesta del router. Por eso, después de usar la aplicación, git los mostrará como modificados: es lo esperado.
 
-Ese diseño tiene una ventaja concreta para la demostración: al terminar, en `backend/` queda el comando exacto que se le mandó al router en cada operación.
----
+Ese diseño tiene una ventaja, en `backend/` queda el comando exacto que se le mandó al router en cada operación.
+
 
 ## Requisitos
 
