@@ -2,7 +2,7 @@
 
 Aplicación en **Python** con interfaz gráfica **CustomTkinter** para administrar un router **MikroTik (RouterOS)** desde **Linux** mediante **SSH**, con el backend implementado en **Shell Scripting**.
 
-[Máquinas Virtuales Configuradas](https://drive.google.com/file/d/1t0Vjvz0_PlpObGKnDVnOmiwsnXt656cn/view?usp=sharing)
+[Máquina Virtual Configurada Utilizada en el Proyecto](https://drive.google.com/file/d/1t0Vjvz0_PlpObGKnDVnOmiwsnXt656cn/view?usp=sharing)
 ---
 
 ## Integrantes del grupo
