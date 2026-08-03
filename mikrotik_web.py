@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 ===============================================================================
  CONTROL MIKROTIK ROUTER  --  VERSION WEB (Flask)
@@ -18,28 +16,14 @@
    mikrotik_web.py
         FRONTEND web (Flask + HTML)
 
- Aqui NO se escribe ni un solo comando de RouterOS, ni una sola linea de ssh,
- ni una sola validacion. Todo eso ya existe en el backend y se llama igual
- que desde la ventana de escritorio:
-
+ se llama desde la ventana de escritorio:
         ok, titulo, detalle = mk.op_crear_ip(direccion, interfaz, comentario)
-
- Si manana se corrige un error en el backend, las DOS interfaces quedan
- corregidas a la vez, porque hay una sola copia de la logica.
 
  COMO SE EJECUTA
  ---------------
      pip install flask
      python3 mikrotik_web.py
-
- y se abre en el navegador:   http://localhost:5000
- (o http://<ip-de-esta-pc>:5000 desde otra maquina de la red)
-
- AVISO DE SEGURIDAD
- ------------------
- El servidor no lleva autenticacion: cualquiera que llegue al puerto 5000
- puede administrar el router. Esta pensado para la red de laboratorio y para
- la demostracion, no para dejarlo expuesto.
+     se abre en el navegador:   http://localhost:5000
 ===============================================================================
 """
 
@@ -52,29 +36,16 @@ import mikrotik_system_customtkinter as mk
 app = Flask(__name__)
 
 # Puerto y direccion de escucha. 0.0.0.0 permite entrar desde otra maquina
-# de la red; para dejarlo solo local, cambiar a 127.0.0.1.
 HOST = "0.0.0.0"
 PUERTO = 5000
-
-# La pagina de llaves SSH pide la contrasena del router y puede sustituir la
-# llave del equipo. Como el servidor no lleva autenticacion y va por HTTP sin
-# cifrar, por defecto SOLO responde a peticiones que vengan de esta misma
-# maquina (localhost). El resto de la aplicacion si es accesible desde la red.
-#
-# Ponlo en True bajo tu responsabilidad si necesitas usar esa pagina desde
-# otro equipo de la red del laboratorio.
 PERMITIR_LLAVES_REMOTO = False
 
 
 # =============================================================================
 #  ESTADO DE LA PAGINA
 # =============================================================================
-#  Se guarda el ultimo resultado para volver a pintarlo despues del redirect.
-#  Es el equivalente del panel RESULTADO de la version de escritorio.
-#
 #  Se usa el patron POST -> redirect -> GET para que al recargar la pagina el
 #  navegador no repita la ultima operacion contra el router.
-# =============================================================================
 
 _ultimo = {"ok": None, "titulo": "", "detalle": ""}
 
@@ -100,10 +71,6 @@ def campo(nombre):
 
 # =============================================================================
 #  PLANTILLA HTML
-# =============================================================================
-#  Se mantiene la identidad visual de la version de escritorio: barra
-#  #00B4D8, botones negros con el texto en verde (crear), rojo (eliminar) o
-#  blanco (consultar), y un panel RESULTADO monoespaciado al final.
 # =============================================================================
 
 BASE = """<!doctype html>
@@ -812,13 +779,6 @@ CUERPO_LLAVES = """
 
 # =============================================================================
 #  PAGINA DE LLAVES SSH
-# =============================================================================
-#  Es la seccion mas delicada de la web: pide la contrasena del router y puede
-#  sustituir la llave del equipo. Como el servidor no lleva autenticacion, por
-#  defecto solo responde a peticiones que vengan de la propia maquina.
-#
-#  Para habilitarla desde toda la red, poner PERMITIR_LLAVES_REMOTO = True al
-#  principio de este archivo.
 # =============================================================================
 
 def _llaves_permitido():

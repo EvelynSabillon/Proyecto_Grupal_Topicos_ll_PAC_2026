@@ -1,7 +1,6 @@
 """
 ===============================================================================
  CONTROL MIKROTIK ROUTER
- Administracion de un router MikroTik (RouterOS) desde Python sobre Linux
 ===============================================================================
 
  ARQUITECTURA
@@ -34,8 +33,7 @@
             v
        RouterOS  ->  la respuesta se CAPTURA y se interpreta
 
- Los scripts .sh no son decorativos: son el backend de shell scripting que
- pide el enunciado, y quedan en disco como evidencia auditable de lo que se
+ Los scripts .sh son el backend de shell scripting y quedan en disco como evidencia auditable de lo que se
  le mando al router.
 ===============================================================================
 """
@@ -68,9 +66,7 @@ except ImportError:
 #  SECCION 0 - CONFIGURACION
 # =============================================================================
 #  Lo unico que hay que tocar para mover el proyecto a otra maquina o a otro
-#  router son las constantes de este bloque.
-#
-#  Las rutas NO estan escritas a mano: se calculan a partir de donde esta
+#  router son las constantes de este bloque.Las rutas NO estan escritas a mano: se calculan a partir de donde esta
 #  este archivo.
 # =============================================================================
 
@@ -171,8 +167,7 @@ cargar_conexion()
 # =============================================================================
 #  RouterOS no usa codigos de salida: cuando rechaza un comando, el ssh
 #  termina igual con returncode 0 y la queja viaja en el TEXTO de la
-#  respuesta. Por eso no basta con mirar el returncode; hay que leer lo que
-#  dijo el router.
+#  respuesta.
 #
 #  Se distinguen tres situaciones porque al usuario le sirven mensajes
 #  distintos en cada una:
@@ -375,11 +370,8 @@ def escapar(valor):
 #
 #      ejecutar(archivo_sh, comando)  -> para CAMBIAR algo en el router
 #      consultar(comando)             -> para PREGUNTAR algo al router
-#
-#  QUE CAMBIO RESPECTO A LA VERSION ANTERIOR
-#  Antes se usaba os.system(), que ejecuta el comando y tira la salida a la
-#  basura. Como consecuencia la aplicacion mostraba "operacion exitosa"
-#  Ahora ejecutar() devuelve (ok, salida) y quien llama decide.
+
+#      ejecutar() devuelve (ok, salida) y quien llama decide.
 # =============================================================================
 
 def _ssh(comando_router):
@@ -475,10 +467,7 @@ def correr_pasos(pasos):
 
 def consultar(comando_router):
     """Pregunta algo al router y devuelve su respuesta como texto.
-
-    NUNCA lanza excepcion: si el ssh falla devuelve el texto del error. Antes
-    varias consultas usaban check_output pelado y, con el router apagado,
-    reventaban la aplicacion entera con una excepcion sin capturar.
+    NUNCA lanza excepcion: si el ssh falla devuelve el texto del error.
     """
     try:
         salida = subprocess.check_output(_ssh(comando_router), shell=True,
@@ -504,14 +493,6 @@ def hay_conexion():
 
 def find_addr(valor):
     """Devuelve el [find ...] que de verdad encuentra una direccion.
-
-    En RouterOS  [find address=192.168.56.0/24]  NO encuentra nada: address
-    es de tipo prefijo, no texto, y la comparacion directa falla en silencio.
-    Como un remove sobre un find vacio tampoco da error, el boton parecia
-    funcionar y no borraba nada.
-
-    La forma correcta es convertir el campo a texto con :tostr antes de
-    comparar.
     """
     return '[find where [:tostr $address]="' + valor + '"]'
 
@@ -526,10 +507,6 @@ def find_addr(valor):
 
 def get_interfaces():
     """Lista TODAS las interfaces del router, tengan IP o no.
-
-    Antes se listaban solo las que ya tenian IP, sacandolas de /ip address.
-    Eso hacia imposible ponerle la primera IP a una interfaz libre desde el
-    combobox, que es justo el caso mas comun.
     """
     salida = consultar(":foreach i in=[/interface find] do={"
                        ":put [/interface get $i name]}")
@@ -549,11 +526,6 @@ def get_ips():
 
 def get_ips_con_interfaz():
     """Lista pares (direccion, interfaz) en UNA sola consulta.
-
-    Antes se hacian dos consultas por separado y se emparejaban por posicion
-    con dos diccionarios. Si una interfaz tenia dos IPs, las llaves repetidas
-    se pisaban y el emparejamiento salia mal: por eso el boton de eliminar
-    llegaba a borrar la IP equivocada.
     """
     salida = consultar(
         ":foreach i in=[/ip address find] do={"
@@ -602,8 +574,7 @@ def get_rutas_estaticas():
     """Destinos de las rutas estaticas.
 
     Se filtra por `static` porque las rutas que el router genera solo (las de
-    sus propias interfaces) no se pueden borrar, y ofrecerlas en el combobox
-    de eliminar solo produce errores confusos.
+    sus propias interfaces) no se pueden borrar.
     """
     salida = consultar(":foreach i in=[/ip route find where static] do={"
                        ":put [:tostr [/ip route get $i dst-address]]}")
@@ -633,9 +604,7 @@ def get_dns_router():
 def lista_dns(texto):
     """Convierte a conjunto una lista de DNS venga como venga.
     El usuario escribe  8.8.8.8,8.8.4.4  pero el router devuelve el array
-    con  :tostr  y lo une con punto y coma:  8.8.8.8;8.8.4.4 . Comparar las
-    dos cadenas tal cual daba siempre distinto y la operacion se reportaba
-    como fallida aunque el DNS hubiera quedado bien puesto.
+    con  :tostr  y lo une con punto y coma:  8.8.8.8;8.8.4.4
     """
     return set(p for p in re.split(r"[;,\s]+", texto or "") if p)
 
@@ -651,9 +620,6 @@ def existe_ip(direccion):
 
 def existe_red_dhcp(red):
     """True si existe una red DHCP con esa direccion.
-
-    Hace falta porque un `set` sobre un find vacio no da error ni salida: sin
-    esta comprobacion la ventana anunciaria exito sobre una red inexistente.
     """
     r = consultar(':put [:tostr [/ip dhcp-server network find where '
                   '[:tostr $address]="' + red + '"]]')
@@ -670,8 +636,7 @@ def existe_ruta_estatica(destino):
 def dhcp_server_de_interfaz(interfaz):
     """Nombre del servidor DHCP que ya ocupa esa interfaz, o cadena vacia.
 
-    RouterOS solo admite UN servidor DHCP por interfaz. Sin esta comprobacion
-    el segundo intento fallaba con un mensaje que no explicaba nada.
+    RouterOS solo admite UN servidor DHCP por interfaz.
     """
     r = consultar(":foreach i in=[/ip dhcp-server find interface=" + interfaz +
                   "] do={:put [/ip dhcp-server get $i name]}")
@@ -683,8 +648,7 @@ def dhcp_server_de_interfaz(interfaz):
 def dhcp_server_invalido(nombre):
     """Estado real del servidor DHCP: 'true', 'false', 'no existe' o el error.
 
-    Verificacion de post-condicion: que los comandos no den error NO basta.
-    El router puede aceptar los cuatro pasos y aun asi marcar el servidor
+    Verificacion de post-condicion:El router puede aceptar los cuatro pasos y aun asi marcar el servidor
     como invalid si la interfaz no tiene IP o el gateway no pertenece a la
     red. En ese caso el servidor existe pero no reparte nada.
     """
@@ -745,9 +709,6 @@ def print_interfaces():
 #     3. ejecuta el comando (o la secuencia de comandos)
 #     4. VERIFICA que el cambio quedara aplicado de verdad
 #     5. devuelve (ok, titulo, detalle) para que la ventana lo muestre
-#
-#  El paso 4 es el que faltaba en la version anterior y el que hace que la
-#  aplicacion no mienta.
 # =============================================================================
 
 def _sin_router():
@@ -847,10 +808,6 @@ def op_crear_ip(direccion, interfaz, comentario):
 
 def op_eliminar_ip(direccion):
     """Elimina una IP buscandola POR DIRECCION, no por numero de fila.
-
-    La version anterior hacia  ip address remove N , donde N era la posicion
-    de la interfaz dentro de una lista. Si una interfaz tenia dos IPs, las
-    llaves repetidas del diccionario se pisaban y se borraba la IP equivocada.
     """
     ok, msg = validar_cidr(direccion)
     if not ok:
@@ -892,11 +849,6 @@ def op_crear_dhcp(interfaz, ip_interfaz, pool, rango, servidor, red, gateway, dn
         1. Pool de direcciones
         2. Servidor DHCP apuntando al pool
         3. Red con gateway y DNS
-
-    La version anterior no hacia el paso 0, y su dhcp.sh tenia la
-    concatenacion mal escrita ("ranges="+$1 le manda al router
-    ranges=+192.168...), ademas del nombre del pool fijo, lo que impedia
-    crear un segundo servidor.
     """
     for valor, validador, etiqueta in (
             (interfaz, validar_interfaz, "Interfaz"),
@@ -982,10 +934,8 @@ def op_crear_dhcp(interfaz, ip_interfaz, pool, rango, servidor, red, gateway, dn
 
 def op_eliminar_dhcp(servidor, pool, red):
     """Elimina servidor, pool y red DHCP, en ese orden.
-
-    El orden importa: el pool no se puede borrar mientras un servidor lo este
-    usando. La version anterior solo borraba el servidor y dejaba huerfanos
-    el pool y la red, que despues estorbaban al crear el siguiente.
+    El pool no se puede borrar mientras un servidor lo este
+    usando.
     """
     ok, msg = validar_nombre(servidor, "nombre del servidor")
     if not ok:
@@ -1172,17 +1122,13 @@ def op_eliminar_ruta(destino):
 
 
 # -------------------------------- RESPALDOS ----------------------------------
-#  Se mantiene el comportamiento del proyecto de Fernando: los respaldos se
-#  traen al PC y se listan los del PC (no los del router), y ademas se pueden
+#  Los respaldos se traen al PC y se listan los del PC (no los del router), y ademas se pueden
 #  eliminar desde la aplicacion.
 # -----------------------------------------------------------------------------
 
 def op_crear_respaldo():
     """Crea el respaldo en el router y lo trae al PC, comprobando cada paso.
-
-    La version anterior lanzaba el script y esperaba 5 segundos fijos antes de
-    copiar, sin mirar si algo habia fallado: siempre decia "respaldo creado".
-    Aqui se espera a que el archivo aparezca de verdad, y se comprueba que
+    Se espera a que el archivo aparezca de verdad, y se comprueba que
     llegue al PC y que no pese 0 bytes.
     """
     sin = _sin_router()
@@ -1340,9 +1286,7 @@ import signal
 
 def _correr_con_password(argv, password, timeout=45):
     """Ejecuta un comando dentro de un terminal falso y le da la contrasena.
-
     Devuelve (codigo_de_salida, salida_completa).
-
     Se responde a un maximo de 3 peticiones de contrasena: si el router la
     rechaza, ssh vuelve a preguntar, y sin ese limite el bucle seguiria
     reintentando hasta agotar el timeout.
@@ -1439,12 +1383,6 @@ def _correr_con_password(argv, password, timeout=45):
 
 def op_guardar_conexion(ip, usuario, llave):
     """Cambia la IP, el usuario y la llave, y los deja guardados.
-
-    Los tres valores son globales del modulo: en cuanto se cambian aqui, la
-    siguiente llamada a _ssh() ya usa los nuevos. No hace falta reiniciar.
-
-    Se validan antes de tocar nada, para no dejar la aplicacion apuntando a
-    una direccion imposible.
     """
     global IP, USUARIO, LLAVE
 
@@ -1647,9 +1585,6 @@ def op_copiar_llave_al_router(password):
         scp <LLAVE>.pub <usuario>@<ip>:/
         ssh <usuario>@<ip> "/user ssh-keys import
                               public-key-file=<archivo> user=<usuario>"
-
-    Es la UNICA operacion de todo el proyecto que necesita la contrasena del
-    router, porque la llave todavia no esta instalada.
     """
     if not os.path.isfile(llave_publica()):
         return (False, "No hay llave publica",
@@ -1688,8 +1623,7 @@ def op_copiar_llave_al_router(password):
                 (salida or "(sin respuesta)"))
 
     # --- Paso 3: importarla dentro de RouterOS ------------------------------
-    # Este ssh todavia va con contrasena: la llave esta copiada como archivo,
-    # pero el router aun no la tiene asociada al usuario.
+
     argv_ssh = ["ssh", "-T",
                 "-o", "StrictHostKeyChecking=accept-new",
                 "-o", "ConnectTimeout=" + str(TIMEOUT),
@@ -1712,8 +1646,7 @@ def op_copiar_llave_al_router(password):
                 " user=" + USUARIO)
 
     # --- Verificacion: entrar YA SIN contrasena -----------------------------
-    # Es la unica prueba que vale. Que los dos comandos anteriores no dieran
-    # error no garantiza que la autenticacion por llave funcione.
+
     ok, detalle = hay_conexion()
     reporte.append("3) Probar el acceso sin contrasena".ljust(38, ".") +
                    (" OK" if ok else " FALLO"))
@@ -1766,8 +1699,8 @@ def op_corregir_permisos():
     """Pone la llave privada en 600.
 
     ssh RECHAZA usar una llave privada que puedan leer otros usuarios del
-    sistema, y el mensaje que da ("UNPROTECTED PRIVATE KEY FILE") desconcierta
-    bastante la primera vez. Este boton lo arregla en un clic.
+    sistema, y el mensaje que da ("UNPROTECTED PRIVATE KEY FILE"). 
+    Este boton lo arregla en un clic.
     """
     if not os.path.isfile(LLAVE):
         return False, "No hay llave privada", "No existe " + LLAVE
@@ -1797,9 +1730,7 @@ def op_corregir_permisos():
 #  Python solo LEE esos archivos cada segundo y repinta. Asi la interfaz
 #  grafica nunca se queda bloqueada esperando a la red.
 #
-#  El productor escribe en un archivo .tmp y despues hace mv. En Linux el mv
-#  dentro del mismo sistema de archivos es atomico, asi que el consumidor
-#  nunca llega a leer un archivo a medio escribir.
+#  El productor escribe en un archivo .tmp y despues hace mv.
 # =============================================================================
 
 def _lanzar(script, *args):
@@ -1887,10 +1818,6 @@ def formato_trafico(bits):
 #  Ejecutar el archivo directamente  ->  se construye y se abre la ventana.
 #  Importarlo desde otro programa    ->  NO se abre nada, solo queda
 #                                        disponible el backend.
-#
-#  Eso es lo que permite que mikrotik_web.py reutilice exactamente las
-#  mismas funciones op_* sin duplicar una sola linea de logica, y es la
-#  prueba practica de que las dos capas estan de verdad separadas.
 # =============================================================================
 
 if __name__ == "__main__":
@@ -1914,7 +1841,7 @@ if __name__ == "__main__":
     ctk.set_appearance_mode(APARIENCIA)
     ctk.set_default_color_theme(TEMA)
 
-    # Paleta y tipografias (se conserva la identidad visual del proyecto original)
+    # Paleta y tipografias
     COLOR_BARRA = "#00B4D8"
     COLOR_BOTON = "black"
     COLOR_OK = "green"
@@ -1935,12 +1862,6 @@ if __name__ == "__main__":
 
     def cargar_imagen(nombre, lado=120):
         """Carga una imagen del semaforo desde assets/.
-
-        Se prueba primero .png porque conserva la transparencia y el semaforo se
-        ve recortado sobre el fondo del panel; el .gif se deja como alternativa.
-        Devuelve None si falta el archivo o si no hay PIL, para que la ventana de
-        monitoreo siga funcionando (con texto en vez de luces) en vez de reventar
-        al abrirse.
         """
         if not HAY_PIL:
             return None
@@ -1961,11 +1882,6 @@ if __name__ == "__main__":
 
         IMPORTANTE: el cuadro de texto se crea UNA sola vez, al final del archivo,
         y aqui solo se le cambia el contenido.
-
-        En la version anterior cada consulta y cada refresco del monitoreo creaba
-        un cuadro de texto NUEVO encima del anterior. Con el monitoreo activo eso
-        apilaba un widget por segundo -unos 2400 en una demostracion de 40
-        minutos- y la aplicacion se degradaba a ojos vista.
         """
         panel_resultado.configure(state="normal")
         panel_resultado.delete("1.0", END)
@@ -1976,7 +1892,6 @@ if __name__ == "__main__":
 
     def trabajando(texto="Consultando al router, espera un momento..."):
         """Avisa en el panel de que hay una operacion en curso y repinta ya.
-
         update_idletasks fuerza a Tk a dibujar antes de seguir: sin esto el
         mensaje no se veria, porque la ventana queda congelada mientras el ssh
         hace su viaje de ida y vuelta.
@@ -1987,11 +1902,9 @@ if __name__ == "__main__":
 
     def resultado(terna, ventana=None, cerrar_si_ok=False, al_terminar=None):
         """Muestra el (ok, titulo, detalle) que devolvio el backend.
-
         Es el unico punto del programa donde se decide si una operacion se
         anuncia como exito o como fallo, y esa decision la toma el backend, no la
-        ventana. En la version anterior cada boton mostraba "operacion exitosa"
-        sin preguntarle a nadie.
+        ventana.
         """
         ok, titulo, detalle = terna
         mostrar(titulo, detalle)
@@ -2012,11 +1925,8 @@ if __name__ == "__main__":
     def nueva_ventana(titulo, geometria):
         """Crea una ventana secundaria ya configurada.
 
-        Ninguna ventana secundaria llama a mainloop(). En la version anterior
-        cada Toplevel terminaba con su propio v1.mainloop(), lo que anida bucles
-        de eventos de Tk: es incorrecto y podia colgar la aplicacion al cerrar
-        las ventanas en cierto orden. Con transient() + grab_set() se consigue el
-        comportamiento modal que se buscaba, y de forma correcta.
+        Ninguna ventana secundaria llama a mainloop(). Con transient() + grab_set() se consigue el
+        comportamiento modal.
         """
         win = ctk.CTkToplevel(v0)
         win.title(titulo)
@@ -2038,10 +1948,7 @@ if __name__ == "__main__":
         """Atajo para colocar una caja de texto, con su texto de ayuda al lado.
 
         La ayuda se pone en una etiqueta gris a la derecha y NO con el
-        placeholder_text de CustomTkinter. Motivo: CustomTkinter desactiva el
-        placeholder en cuanto la caja lleva un textvariable asociado -no puede
-        distinguir "vacia" de "con valor"-, y como aqui todas las cajas usan
-        textvariable, los ejemplos nunca llegaban a verse.
+        placeholder_text de CustomTkinter.
         """
         ent = ctk.CTkEntry(padre, textvariable=variable, width=ancho)
         ent.place(x=x, y=y)
@@ -2228,10 +2135,7 @@ if __name__ == "__main__":
 
     def ventana_dns():
         """Configurar, eliminar y consultar el servicio DNS del router.
-
-        Se conserva el comportamiento del proyecto original: aqui se administra
-        /ip dns del router (servers y allow-remote-requests). El DNS que reparte
-        el servidor DHCP a sus clientes se configura al crear el DHCP.
+        El DNS que reparte el servidor DHCP a sus clientes se configura al crear el DHCP.
         """
         win = nueva_ventana("CONFIGURAR SERVIDOR DNS", "620x330+380+220")
 
@@ -2365,9 +2269,7 @@ if __name__ == "__main__":
 
     def ventana_respaldos():
         """Crear, listar y eliminar respaldos.
-
-        Se conserva el comportamiento del proyecto original: el respaldo se crea
-        en el router, se copia al PC y lo que se LISTA son los respaldos
+        El respaldo se crea en el router, se copia al PC y lo que se LISTA son los respaldos
         guardados en el PC (no los del router), con opcion de eliminarlos.
         """
         win = nueva_ventana("RESPALDOS DEL ROUTER", "720x360+340+240")
@@ -2428,11 +2330,6 @@ if __name__ == "__main__":
 
     def ventana_monitoreo():
         """Monitoreo en tiempo real de DOS interfaces del router.
-
-        Cumple el requisito del enunciado: dos interfaces a la vez, mostrando
-        estado Up/Down, trafico de entrada y trafico de salida. En la version
-        anterior solo se podia monitorear una interfaz.
-
         La ventana no consulta al router: solo LEE cada segundo los archivos que
         dejan los scripts de monitoreo en runtime/. Por eso la interfaz no se
         congela aunque el router tarde en responder.
@@ -2492,8 +2389,7 @@ if __name__ == "__main__":
             """Crea el bloque visual de una interfaz y devuelve sus widgets.
 
             Los widgets se crean UNA sola vez; el refresco solo les cambia el
-            texto y la imagen. Es la correccion de la fuga de widgets que tenia
-            la version anterior.
+            texto y la imagen.
             """
             marco = ctk.CTkFrame(win, width=380, height=300, corner_radius=10,
                                  fg_color=COLOR_FONDO_PANEL, border_width=1,
@@ -2540,9 +2436,7 @@ if __name__ == "__main__":
 
         # --- Bucle de refresco ---
         # El identificador del after se guarda para poder cancelarlo al cerrar la
-        # ventana. En la version anterior se usaba una variable global y, si se
-        # desactivaba el servicio sin haberlo activado antes, after_cancel(None)
-        # lanzaba una excepcion.
+        # ventana.
         estado_refresco = {"id": None, "activo": False}
 
         def pintar(panel, archivo_estado, archivo_trafico, nombre_interfaz):
@@ -2653,10 +2547,6 @@ if __name__ == "__main__":
 
         def al_cerrar():
             """Al cerrar la ventana se detienen SIEMPRE los scripts.
-
-            La version anterior impedia cerrar la ventana mientras el servicio
-            estuviera activo. Eso protegia de dejar procesos huerfanos, pero era
-            incomodo; aqui simplemente se limpian solos.
             """
             desactivar(avisar=False)
             win.destroy()
@@ -3022,7 +2912,7 @@ if __name__ == "__main__":
 
         # Una sola consulta trae la direccion y su interfaz emparejadas, en vez
         # de dos consultas por separado que despues habria que casar por
-        # posicion (que es justo lo que fallaba en la version anterior).
+        # posicion
         pares = get_ips_con_interfaz()
         mapa_ip_interfaz.clear()
         mapa_ip_interfaz.update(dict(pares))
@@ -3096,9 +2986,6 @@ if __name__ == "__main__":
 
     def accion_probar_conexion():
         """Prueba la conexion con el router y lo dice claramente.
-
-        Es lo primero que conviene pulsar en la demostracion: si algo falla, se
-        ve aqui y no a mitad de una operacion.
         """
         trabajando("Probando la conexion con " + IP + "...")
         ok, detalle = hay_conexion()
