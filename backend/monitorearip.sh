@@ -8,19 +8,6 @@
 #
 #  Uso:  monitorearip.sh <ip> <archivo_datos> <archivo_estado>
 #
-#  QUE CAMBIO RESPECTO A LA VERSION ANTERIOR
-#  El script original hacia esto:
-#
-#      valor1=$(tail -n1 datos.txt | cut -d " " -f6)
-#      valor2=$(tail -n1 datos.txt | cut -d " " -f6)
-#      if [ $valor1 == "ttl=64" ] ; then ... elif [ $valor2 == "Unreachable" ]
-#
-#  valor1 y valor2 ejecutaban EXACTAMENTE el mismo comando, asi que la rama
-#  de "Unreachable" no podia cumplirse nunca. Ademas comparaba contra
-#  "ttl=64" exacto, cuando el TTL cambia segun el equipo y los saltos de red
-#  (64, 63, 128...), y los tests sin comillas reventaban con el archivo
-#  vacio.
-#
 #  Aqui se busca el patron  ttl=  en cualquier posicion y con cualquier
 #  valor, y ademas se confirma con un ping directo para no dar por buena una
 #  linea antigua que hubiera quedado en el archivo.

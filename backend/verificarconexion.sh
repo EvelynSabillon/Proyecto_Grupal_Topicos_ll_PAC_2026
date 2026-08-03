@@ -6,13 +6,6 @@
 #
 #  Uso:  verificarconexion.sh <ip> <archivo_de_salida>
 #
-#  QUE CAMBIO RESPECTO A LA VERSION ANTERIOR
-#  Antes se lanzaba  ping <ip> >> datosconexion.txt  sin limite: un ping
-#  continuo escribe una linea por segundo, asi que en una demostracion de
-#  una hora el archivo pasaba de 3600 lineas y seguia creciendo mientras la
-#  aplicacion estuviera abierta. El `tail` sobre ese archivo se volvia cada
-#  vez mas lento.
-#
 #  Ahora se usa  ping -c 1  (un solo paquete por vuelta) y se recorta el
 #  archivo cuando pasa de MAX_LINEAS, asi que su tamano queda acotado.
 # =============================================================================
